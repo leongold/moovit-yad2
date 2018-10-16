@@ -8,5 +8,6 @@
     "js": ["jquery.min.js", "content.js"]
     // "run_at": "document_end"
    }],
-   "permissions": ["activeTab"]
+   "permissions": ["activeTab"],
+   "web_accessible_resources": ["address"]
 }

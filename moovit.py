@@ -7,8 +7,7 @@ from requests_html import HTMLSession
 
 from lat_lon import get_lat_lon
 
-FROM_CITY = "רעננה"
-FROM_ADDR = "דרך ירושליים 34"
+
 MOOVIT_FMT = (
     "https://moovit.com/?from={addr_x}&to={addr_y}&fll={xlat}_{xlon}"
     "tll={ylat}_{ylon}&timeType=depart&time={when}&metroId=1&lang=en"
@@ -90,5 +89,4 @@ def get_routes(addr_x, addr_y):
 
 
 if __name__ == '__main__':
-    addr_x = "{} {}".format(FROM_ADDR, FROM_CITY)
-    print(json.dumps(get_routes(addr_x, sys.argv[1])))
+    print(json.dumps(get_routes(sys.argv[1], sys.argv[2])))

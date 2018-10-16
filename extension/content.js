@@ -1,9 +1,11 @@
 
+var address_1;
+
 function get_city(ele) {
     return ele.find("span.subtitle")[0].innerText.split(",").pop().trim()
 }
 
-function get_address(ele) {
+function get_street(ele) {
     return $(ele.find("span.title")[0]).clone().children().remove().end().text().trim()
 }
 
@@ -66,13 +68,15 @@ var observer = new MutationObserver(function(mutations) {
 
             var parent = $(node.parentElement);
             var city = get_city(parent);
-            var address = get_address(parent);
+            var street = get_street(parent);
+            var address_2 = street + ' ' + city;
+
             $.ajax({
                     type: 'GET',
                     url: "http://127.0.0.1:5000/query",
                     data: {
-                        'city': city,
-                        'address': address, //passing some input here
+                        'address_1': address_1,
+                        'address_2': address_2
                     },
                     dataType: "json",
                     success: function(response) {
@@ -85,6 +89,13 @@ var observer = new MutationObserver(function(mutations) {
         }
     });
 });
+
+fetch(chrome.runtime.getURL("address"))
+    .then(function(response) {
+        return response.text().then(function(text) { 
+            address_1 = text;
+        }) 
+    })
 
 var config = {
     attributes: false,
