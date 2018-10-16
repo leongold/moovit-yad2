@@ -73,7 +73,7 @@ var observer = new MutationObserver(function(mutations) {
 
             $.ajax({
                     type: 'GET',
-                    url: "http://127.0.0.1:5000/query",
+                    url: "http://127.0.0.1:5000/single",
                     data: {
                         'address_1': address_1,
                         'address_2': address_2

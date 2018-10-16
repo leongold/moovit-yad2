@@ -3,6 +3,8 @@ import os
 import json
 import subprocess
 
+from pathos.multiprocessing import ProcessingPool as Pool
+
 from flask import Flask, request
 from flask_cors import CORS
 from requests_html import HTMLSession
@@ -15,38 +17,45 @@ CORS(app)
 
 cache = {}
 
-@app.route('/query')
-def main():
-    global cache
 
-    address_1 = request.args.get('address_1')
-    address_2 = request.args.get('address_2')
-    if not address_1 or not address_2:
-        return "Requires address_1 and address_2 parameters."
-
-    print("address_1:", address_1)
-    print("address_2:", address_2)
-
-    cached_result = cache.get((address_1, address_2))
+def _process(addr_1, addr_2):
+    cached_result = cache.get((addr_1, addr_2))
     if cached_result:
-        print("result:", cached_result)
         return cached_result
 
     proc = subprocess.Popen(
         [os.path.join(os.path.dirname(os.path.realpath(__file__)), 'moovit.py'),
-         address_1, address_2],
+         addr_1, addr_2],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
+
     result = proc.communicate()[0].decode('utf-8').strip()
     try:
-        json.loads(result)
+        result = json.loads(result)
     except ValueError:
-        print("error:", result)
         result = [["no data", []]]
-    result = json.dumps(result)
-    cache[(address_1, address_2)] = result
-    print("result:", result)
     return result
+
+
+@app.route('/single')
+def single():
+    addr_1 = request.args.get('address_1')
+    addr_2 = request.args.get('address_2')
+    return json.dumps(_process(addr_1, addr_2))
+
+
+@app.route('/batch')
+def batch():
+    dst = request.args.get('address_1')
+    origins = request.args.get('origins').split(',')
+
+    def proc(o):
+        return _process(o, dst)
+
+    with Pool(len(origins)) as p:
+        results = p.map(proc, origins)
+
+    return json.dumps(results)
 
 if __name__ == '__main__':
     app.run()
