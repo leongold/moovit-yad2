@@ -1,5 +1,5 @@
 
-var address_1;
+var address_2;
 
 function get_city(ele) {
     return ele.find("span.subtitle")[0].innerText.split(",").pop().trim()
@@ -69,7 +69,7 @@ var observer = new MutationObserver(function(mutations) {
             var parent = $(node.parentElement);
             var city = get_city(parent);
             var street = get_street(parent);
-            var address_2 = street + ' ' + city;
+            var address_1 = street + ' ' + city;
 
             $.ajax({
                     type: 'GET',
@@ -93,7 +93,7 @@ var observer = new MutationObserver(function(mutations) {
 fetch(chrome.runtime.getURL("address"))
     .then(function(response) {
         return response.text().then(function(text) { 
-            address_1 = text;
+            address_2 = text;
         }) 
     })
 
