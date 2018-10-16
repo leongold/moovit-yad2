@@ -9,9 +9,20 @@ from lat_lon import get_lat_lon
 
 
 MOOVIT_FMT = (
-    "https://moovit.com/?from={addr_x}&to={addr_y}&fll={xlat}_{xlon}"
+    "https://moovit.com/?from=0&to=1&fll={xlat}_{xlon}&"
     "tll={ylat}_{ylon}&timeType=depart&time={when}&metroId=1&lang=en"
 )
+
+
+def _create_moovit_url(addr_x, addr_y):
+    xlat, xlon = get_lat_lon(addr_x)
+    ylat, ylon = get_lat_lon(addr_y)
+    when = _closest_next_weekday_at_10()
+    return MOOVIT_FMT.format(
+        xlat=xlat, xlon=xlon,
+        ylat=ylat, ylon=ylon,
+        when=when
+    )
 
 
 def _closest_next_weekday_at_10():
@@ -74,19 +85,18 @@ def _get_routes(root):
 
 
 def get_routes(addr_x, addr_y):
-    RENDER_SLEEP = 5
+    RENDER_SLEEP = 2
 
-    xlat, xlon = get_lat_lon(addr_x)
-    ylat, ylon = get_lat_lon(addr_y)
-    when = _closest_next_weekday_at_10()
-    url = MOOVIT_FMT.format(
-        addr_x=addr_x, addr_y=addr_y, xlat=xlat, xlon=xlon,
-        ylat=ylat, ylon=ylon, when=when)
     html_session = HTMLSession()
-    response = html_session.get(url)
+    response = html_session.get(_create_moovit_url(addr_x, addr_y))
     response.html.render(sleep=RENDER_SLEEP)
     return _get_routes(response.html.lxml)
 
 
 if __name__ == '__main__':
-    print(json.dumps(get_routes(sys.argv[1], sys.argv[2])))
+    addr_x = sys.argv[1]
+    addr_y = sys.argv[2]
+    try:
+        print(json.dumps(get_routes(addr_x, addr_y)))
+    except:
+        print(_create_moovit_url(addr_x, addr_y))

@@ -24,8 +24,12 @@ def main():
     if not address_1 or not address_2:
         return "Requires address_1 and address_2 parameters."
 
+    print("address_1:", address_1)
+    print("address_2:", address_2)
+
     cached_result = cache.get((address_1, address_2))
     if cached_result:
+        print("result:", cached_result)
         return cached_result
 
     proc = subprocess.Popen(
@@ -37,9 +41,11 @@ def main():
     try:
         json.loads(result)
     except ValueError:
+        print("error:", result)
         result = [["no data", []]]
     result = json.dumps(result)
     cache[(address_1, address_2)] = result
+    print("result:", result)
     return result
 
 if __name__ == '__main__':
