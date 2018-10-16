@@ -1,0 +1,12 @@
+{
+  "name": "Moovit Yad2 Daemon",
+  "version": "1.0",
+  "description": "",
+  "manifest_version": 2,
+  "content_scripts": [{
+    "matches": ["*://www.yad2.co.il/realestate/rent*"],
+    "js": ["jquery.min.js", "content.js"]
+    // "run_at": "document_end"
+   }],
+   "permissions": ["activeTab"]
+}
