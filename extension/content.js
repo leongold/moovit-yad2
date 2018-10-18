@@ -1,13 +1,7 @@
 
+var server;
+var port;
 var address_2;
-
-function get_city(ele) {
-    return ele.find("span.subtitle")[0].innerText.split(",").pop().trim()
-}
-
-function get_street(ele) {
-    return $(ele.find("span.title")[0]).clone().children().remove().end().text().trim()
-}
 
 function create_route_strings(data) {
     var strings = [];
@@ -38,62 +32,64 @@ function create_route_strings(data) {
     return strings;
 }
 
-function append_routes(node, strings) {
-    var content_ele = $(node.find("div.content")[2]);
-    content_ele.append("<br/");
-    for (var i = 0; i < strings.length; i++) {
-        content_ele.append("<br/>" + strings[i]);
-    }
-}
-
-function onSuccess(response, node) {
-    var data = JSON.parse(response);
+function onSuccess(data, contact_info, addr_1, addr_2) {
     var strings = create_route_strings(data);
-    //setTimeout(function() { append_routes(node, strings) }, 1000);
-    append_routes(node, strings);
+    var ele = "<div>" + addr_1 + ' -> ' + addr_2 + ': <br>'
+    for (var i = 0; i < strings.length; i++) {
+        ele += strings[i] + '<br>'
+    }
+    ele += "</div>"
+    $(contact_info).append(ele)
 }
 
 var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.addedNodes && mutation.addedNodes.length > 0) {
             var node = mutation.addedNodes[0];
-        	try {
+            try {
                 var cls = node.getAttribute("class");
             } catch(err) {
-            	return;
+                return;
             }
-            if (cls != "accordion_wide open") {
-            	return;
+            if (cls != "ad_iframe") {
+                return;
             }
 
-            var parent = $(node.parentElement);
-            var city = get_city(parent);
-            var street = get_street(parent);
-            var address_1 = street + ' ' + city;
-
-            $.ajax({
-                    type: 'GET',
-                    url: "http://127.0.0.1:5000/single",
-                    data: {
-                        'address_1': address_1,
-                        'address_2': address_2
-                    },
-                    dataType: "json",
-                    success: function(response) {
-                        onSuccess(response, $(node));
-                    },
-                    error: function(request, status, error) {
-                        console.log(request, status. errror);
-                    }
-            });
+            setTimeout(function() {
+                var iframe = $(node).find("iframe")[0];
+                var iframe_document = iframe.contentWindow.document
+                var details = $(iframe_document).find("div.details_block_body")[0]
+                var contact_info = $(iframe_document).find("div.details_block_body")[2]
+                var city = $(details).find("div tr td")[3].innerText.trim()
+                var street = $(details).find("div tr td")[9].innerText.split(" ").slice(0, -1).join(" ").trim()
+                var address_1 = street + ',' + city;
+                console.log("requiring routes:", address_1, address_2)
+                $.ajax({
+                        type: 'GET',
+                        url: "http://" + server + ":" + port,
+                        data: {
+                            'src_addr': address_1,
+                            'dst_addr': address_2
+                        },
+                        dataType: "json",
+                        success: function(response) {
+                            onSuccess(response, contact_info, address_1, address_2);
+                        },
+                        error: function(request, status, error) {
+                            console.log(request, status. errror);
+                        }
+                });
+            }, 2500);
         }
     });
 });
 
-fetch(chrome.runtime.getURL("address"))
+fetch(chrome.runtime.getURL("config"))
     .then(function(response) {
-        return response.text().then(function(text) { 
-            address_2 = text;
+        return response.json().then(function(json) {
+            address_2 = json["dst_address"],
+            server = json["server"],
+            port = json["port"]
         }) 
     })
 

@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 import datetime
+import os
 import json
 import sys
+import subprocess
 
 from requests_html import HTMLSession
 
@@ -85,7 +87,7 @@ def _get_routes(root):
 
 
 def get_routes(addr_x, addr_y):
-    RENDER_SLEEP = 2
+    RENDER_SLEEP = 5
 
     html_session = HTMLSession()
     response = html_session.get(_create_moovit_url(addr_x, addr_y))
@@ -93,10 +95,20 @@ def get_routes(addr_x, addr_y):
     return _get_routes(response.html.lxml)
 
 
+def get_routes_proc(addr_x, addr_y):
+    print(addr_x, addr_y)
+    proc = subprocess.Popen(
+        [os.path.join(os.path.dirname(os.path.realpath(__file__)), __file__),
+         addr_x, addr_y],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
+    raw_result = proc.communicate()[0]
+    print(raw_result)
+    result = json.loads(raw_result.decode('utf-8').strip().replace('\'', '"'))
+    return result
+
+
 if __name__ == '__main__':
     addr_x = sys.argv[1]
     addr_y = sys.argv[2]
-    try:
-        print(json.dumps(get_routes(addr_x, addr_y)))
-    except:
-        print(_create_moovit_url(addr_x, addr_y))
+    print(get_routes(addr_x, addr_y))

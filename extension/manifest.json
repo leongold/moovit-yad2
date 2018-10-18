@@ -1,13 +1,12 @@
 {
-  "name": "Moovit Yad2 Daemon",
+  "name": "Moovit routes for Yad2 ads",
   "version": "1.0",
   "description": "",
   "manifest_version": 2,
   "content_scripts": [{
-    "matches": ["*://www.yad2.co.il/realestate/rent*"],
+    "matches": ["*://www.yad2.co.il/Nadlan/rent.php*"],
     "js": ["jquery.min.js", "content.js"]
-    // "run_at": "document_end"
    }],
    "permissions": ["activeTab"],
-   "web_accessible_resources": ["address"]
+   "web_accessible_resources": ["config"]
 }

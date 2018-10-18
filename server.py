@@ -3,59 +3,36 @@ import os
 import json
 import subprocess
 
-from pathos.multiprocessing import ProcessingPool as Pool
-
+import pickledb
 from flask import Flask, request
 from flask_cors import CORS
 from requests_html import HTMLSession
 
-from moovit import get_routes
+from moovit import get_routes_proc
 
 
+db = pickledb.load('db', True)
 app = Flask(__name__)
 CORS(app)
 
-cache = {}
 
+@app.route('/', methods = ['POST', 'GET'])
+def main():
+    if request.method == 'POST':
+        f = request.form.get
+    else:
+        f = request.args.get
+    src_addr = f('src_addr')
+    dst_addr = f('dst_addr')
 
-def _process(addr_1, addr_2):
-    cached_result = cache.get((addr_1, addr_2))
+    cached_result = db.get(src_addr + dst_addr)
     if cached_result:
-        return cached_result
+        return json.dumps(cached_result)
 
-    proc = subprocess.Popen(
-        [os.path.join(os.path.dirname(os.path.realpath(__file__)), 'moovit.py'),
-         addr_1, addr_2],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-    )
+    result = get_routes_proc(src_addr, dst_addr)
+    db.set(src_addr + dst_addr, result)
+    return json.dumps(result)
 
-    result = proc.communicate()[0].decode('utf-8').strip()
-    try:
-        result = json.loads(result)
-    except ValueError:
-        result = [["no data", []]]
-    return result
-
-
-@app.route('/single')
-def single():
-    addr_1 = request.args.get('address_1')
-    addr_2 = request.args.get('address_2')
-    return json.dumps(_process(addr_1, addr_2))
-
-
-@app.route('/batch')
-def batch():
-    dst = request.args.get('address_1')
-    origins = request.args.get('origins').split(',')
-
-    def proc(o):
-        return _process(o, dst)
-
-    with Pool(len(origins)) as p:
-        results = p.map(proc, origins)
-
-    return json.dumps(results)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
