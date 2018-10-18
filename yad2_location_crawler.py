@@ -33,7 +33,7 @@ def crawl(driver, host, dst_addr):
 
 
 if __name__ == '__main__':
-    config = json.loads(open('config'))
+    config = json.load(open('config'))
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(
