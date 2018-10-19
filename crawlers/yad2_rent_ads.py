@@ -27,7 +27,7 @@ def crawl(driver, url, dst_location, params):
     logging.info('crawling...')
     yad2_url = 'http://www.yad2.co.il/Nadlan/rent.php?' + params
     for page in range(1, 5):
-        yad2_url += '&Page=' + page
+        yad2_url += '&Page=' + str(page)
         driver.get(yad2_url)
         driver.implicitly_wait(10)
 
