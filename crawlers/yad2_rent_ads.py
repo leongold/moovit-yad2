@@ -27,8 +27,8 @@ def crawl(driver, url, dst_location, params):
     logging.info('crawling...')
     yad2_url = 'http://www.yad2.co.il/Nadlan/rent.php?' + params
     for page in range(1, 5):
-        yad2_url += '&Page=' + str(page)
-        driver.get(yad2_url)
+        page_url = yad2_url + '&Page=' + str(page)
+        driver.get(page_url)
         driver.implicitly_wait(10)
 
         document = pq(driver.page_source)
@@ -36,7 +36,7 @@ def crawl(driver, url, dst_location, params):
 
         items = pq(main_table).find("tr[data-feed-place]")
         if not items:
-            logging.warning('no locations, yad2 url: ' + yad2_url)
+            logging.warning('no locations, yad2 url: ' + page_url)
             continue
 
         src_locations = [_get_location(pq(item)) for item in items]
