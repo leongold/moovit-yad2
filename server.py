@@ -27,17 +27,19 @@ def main():
         f = request.args.get
     src_addr = f('src_addr')
     dst_addr = f('dst_addr')
+    path_str = '{} -> {}'.format(src_addr, dst_addr)
 
     cached_result = db.get(src_addr + dst_addr)
     if cached_result:
+        logging.info("returning cached result " + path_str)
         return json.dumps(cached_result)
 
     try:
         routes = get_routes_proc(src_addr, dst_addr)
     except Exception as e:
         logging.error(
-            "failed to get route for {} -> {}: {}".format(
-                dst_addr, src_addr, traceback.format_exc()
+            "failed to get route for {}: {}".format(
+                path_str, traceback.format_exc()
             )
         )
         return json.dumps({"error'": str(e)})
@@ -48,7 +50,7 @@ def main():
         return json.dumps({"error'": str(e)})
 
     logging.info(
-        "saving route for {} -> {}: {}".format(src_addr, dst_addr, routes)
+        "saving route for {}: {}".format(path_str, routes)
     )
     db.set(src_addr + dst_addr, routes)
     return result

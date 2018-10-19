@@ -11,7 +11,12 @@ from requests_html import HTMLSession
 try:
     from moovit.lat_lon import get_lat_lon
 except ModuleNotFoundError:
-    sys.path.append(os.path.join(__file__, '..'))
+    sys.path.append(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            '..'
+            )
+        )
     from moovit.lat_lon import get_lat_lon
 
 
