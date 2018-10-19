@@ -22,9 +22,9 @@ def _get_location(item):
 def crawl(driver, url, dst_location, params):
     logging.info('crawling...')
     yad2_url = 'http://www.yad2.co.il/Nadlan/rent.php?' + params
+
     driver.get(yad2_url)
     driver.implicitly_wait(10)
-
 
     document = pq(driver.page_source)
     main_table = document.find("div[id=main_table]")
