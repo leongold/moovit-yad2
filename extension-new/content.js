@@ -92,7 +92,7 @@ var observer = new MutationObserver(function(mutations) {
 fetch(chrome.runtime.getURL("config"))
     .then(function(response) {
         return response.json().then(function(json) {
-            address_2 = json["dst_address"],
+            address_2 = json["location"],
             url = json["url"]
         }) 
     })
