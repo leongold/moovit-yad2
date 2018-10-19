@@ -4,10 +4,15 @@ import os
 import json
 import sys
 import subprocess
+import traceback
 
 from requests_html import HTMLSession
 
-from lat_lon import get_lat_lon
+try:
+    from moovit.lat_lon import get_lat_lon
+except ModuleNotFoundError:
+    sys.path.append(os.path.join(__file__, '..'))
+    from moovit.lat_lon import get_lat_lon
 
 
 MOOVIT_FMT = (
@@ -79,7 +84,10 @@ def _get_route(route_summary):
 
 
 def _get_routes(root):
-    suggested_routes = root.xpath('//div[@class="suggested-routes"]')[0]
+    try:
+        suggested_routes = root.xpath('//div[@class="suggested-routes"]')[0]
+    except IndexError:
+        return [["no data", []]]
     md_list = suggested_routes.xpath('md-list')[0]
     routes = md_list.xpath('md-list-item')
     return [_get_route(route.xpath('button/div/route-summary')[0])
@@ -96,15 +104,20 @@ def get_routes(addr_x, addr_y):
 
 
 def get_routes_proc(addr_x, addr_y):
-    print(addr_x, addr_y)
     proc = subprocess.Popen(
         [os.path.join(os.path.dirname(os.path.realpath(__file__)), __file__),
          addr_x, addr_y],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
-    raw_result = proc.communicate()[0]
-    print(raw_result)
-    result = json.loads(raw_result.decode('utf-8').strip().replace('\'', '"'))
+    stdout = proc.communicate()[0]
+    try:
+        decoded = stdout.decode('utf-8')
+    except Exception as e:
+        raise ValueError("can't decode {}: {}".format(stdout, str(e)))
+    try:
+        result = json.loads(decoded.strip().replace('\'', '"'))
+    except Exception as e:
+        raise ValueError("can't json.load {}: {}".format(decoded, str(e)))
     return result
 
 

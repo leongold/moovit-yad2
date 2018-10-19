@@ -1,6 +1,5 @@
 
-var server;
-var port;
+var url;
 var address_2;
 
 function get_city(ele) {
@@ -73,7 +72,7 @@ var observer = new MutationObserver(function(mutations) {
 
             $.ajax({
                     type: 'GET',
-                    url: "http://" + server + ":" + port,
+                    url: url,
                     data: {
                         'src_addr': address_1,
                         'dst_addr': address_2
@@ -94,8 +93,7 @@ fetch(chrome.runtime.getURL("config"))
     .then(function(response) {
         return response.json().then(function(json) {
             address_2 = json["dst_address"],
-            server = json["server"],
-            port = json["port"]
+            url = json["url"]
         }) 
     })
 
