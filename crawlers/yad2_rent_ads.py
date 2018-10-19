@@ -28,8 +28,9 @@ def crawl(driver, url, dst_location, params):
     yad2_url = 'http://www.yad2.co.il/Nadlan/rent.php?' + params
     for page in range(1, 5):
         page_url = yad2_url + '&Page=' + str(page)
+        logging.info('page url: ' + page_url)
         driver.get(page_url)
-        driver.implicitly_wait(10)
+        time.sleep(10)
 
         document = pq(driver.page_source)
         main_table = document.find("div[id=main_table]")
