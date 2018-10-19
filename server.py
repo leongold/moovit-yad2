@@ -47,6 +47,9 @@ def main():
         logging.error("failed to convert result to json: " + str(e))
         return json.dumps({"error'": str(e)})
 
+    logging.info(
+        "saving route for {} -> {}: {}".format(src_addr, dst_addr, routes)
+    )
     db.set(src_addr + dst_addr, routes)
     return result
 
