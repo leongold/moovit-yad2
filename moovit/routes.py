@@ -1,6 +1,8 @@
 #!/usr/bin/python3
+import calendar
 import datetime
 import os
+import pytz
 import json
 import sys
 import subprocess
@@ -26,31 +28,32 @@ MOOVIT_FMT = (
 )
 
 
+def _days_delta(dt):
+    # monday = 1
+    # ...
+    # sunday = 7
+    isoweekday = dt.isoweekday()
+    if isoweekday in (4, 5):
+        return 7 - isoweekday
+    return 1
+
+
+def _rounded_millisecond_timestamp():
+    dt = datetime.datetime.now(pytz.timezone("Asia/Jerusalem"))
+    dt.replace(second=0, microsecond=0, minute=0, hour=8)
+    weekday = dt + datetime.timedelta(days=_days_delta(dt))
+    return calendar.timegm(weekday.timetuple()) * 1000
+
+
 def _create_moovit_url(addr_x, addr_y):
     xlat, xlon = get_lat_lon(addr_x)
     ylat, ylon = get_lat_lon(addr_y)
-    when = _closest_next_weekday_at_10()
+    when = _rounded_millisecond_timestamp()
     return MOOVIT_FMT.format(
         xlat=xlat, xlon=xlon,
         ylat=ylat, ylon=ylon,
         when=when
     )
-
-
-def _closest_next_weekday_at_10():
-    today = datetime.date.today()
-    today_at_10 = datetime.datetime(
-        today.year, today.month, today.day, 10, 0
-    )
-    # monday = 1
-    # ...
-    # sunday = 7
-    isoweekday = today_at_10.isoweekday()
-    if today_at_10.isoweekday() in (4, 5):
-        delta = 7 - isoweekday
-    else:
-        delta = 1
-    return int((today_at_10 + datetime.timedelta(days=delta)).timestamp())
 
 
 def _process_leg_type(leg_type):
