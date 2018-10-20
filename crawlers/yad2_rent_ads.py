@@ -14,6 +14,7 @@ from common import get_config
 from common import setup_logging
 
 cache = set()
+logger = setup_logging(__name__)
 
 
 def _get_location(item):
@@ -21,14 +22,14 @@ def _get_location(item):
     return ','.join([e.strip() for e in location.strip().split('-')])
 
 
-def crawl(driver, url, dst_location, params):
+def _crawl(driver, url, dst_location, params):
     global cache
 
-    logging.info('crawling...')
+    logger.info('crawling...')
     yad2_url = 'http://www.yad2.co.il/Nadlan/rent.php?' + params
     for page in range(1, 5):
         page_url = yad2_url + '&Page=' + str(page)
-        logging.info('page url: ' + page_url)
+        logger.info('page url: ' + page_url)
         driver.get(page_url)
         time.sleep(10)
 
@@ -37,11 +38,11 @@ def crawl(driver, url, dst_location, params):
 
         items = pq(main_table).find("tr[data-feed-place]")
         if not items:
-            logging.warning('no locations, yad2 url: ' + page_url)
+            logger.warning('no locations, yad2 url: ' + page_url)
             continue
 
         src_locations = [_get_location(pq(item)) for item in items]
-        logging.debug('src_locations: {}'.format(src_locations))
+        logger.debug('src_locations: {}'.format(src_locations))
 
         for src_location in src_locations:
             if src_location in cache:
@@ -55,7 +56,6 @@ def crawl(driver, url, dst_location, params):
 
 
 if __name__ == '__main__':
-    setup_logging()
     config = get_config()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     )
 
     while True:
-        crawl(
+        _crawl(
             driver,
             config['url'],
             config['location'],

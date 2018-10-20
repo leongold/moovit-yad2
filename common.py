@@ -6,7 +6,8 @@ import sys
 
 import constants
 
-def setup_logging():
+
+def setup_logging(module):
     filename = os.path.basename(sys.argv[0]).split('.')[0]
     filepath = os.path.join(constants.ROOT_DIR, 'logs', filename + '.log')
 
@@ -16,6 +17,7 @@ def setup_logging():
         handlers=[logging.FileHandler(filepath),
                   logging.StreamHandler()]
     )
+    return logging.getLogger(module)
 
 
 def get_config():

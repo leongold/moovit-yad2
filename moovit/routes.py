@@ -10,17 +10,6 @@ import traceback
 
 from requests_html import HTMLSession
 
-try:
-    from moovit.lat_lon import get_lat_lon
-except ModuleNotFoundError:
-    sys.path.append(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            '..'
-            )
-        )
-    from moovit.lat_lon import get_lat_lon
-
 
 MOOVIT_FMT = (
     "https://moovit.com/?from=0&to=1&fll={xlat}_{xlon}&"
@@ -45,9 +34,9 @@ def _rounded_millisecond_timestamp():
     return calendar.timegm(weekday.timetuple()) * 1000
 
 
-def _create_moovit_url(addr_x, addr_y):
-    xlat, xlon = get_lat_lon(addr_x)
-    ylat, ylon = get_lat_lon(addr_y)
+def _create_moovit_url(lat_lon_x, lat_lon_y):
+    xlat, xlon = lat_lon_x
+    ylat, ylon = lat_lon_y
     when = _rounded_millisecond_timestamp()
     return MOOVIT_FMT.format(
         xlat=xlat, xlon=xlon,
@@ -102,19 +91,22 @@ def _get_routes(root):
             for route in routes]
 
 
-def get_routes(addr_x, addr_y):
+def get_routes(lat_lon_x, lat_lon_y):
     RENDER_SLEEP = 5
 
     html_session = HTMLSession()
-    response = html_session.get(_create_moovit_url(addr_x, addr_y))
+    response = html_session.get(_create_moovit_url(lat_lon_x, lat_lon_y))
     response.html.render(sleep=RENDER_SLEEP)
     return _get_routes(response.html.lxml)
 
 
-def get_routes_proc(addr_x, addr_y):
+def get_routes_proc(lat_lon_x, lat_lon_y):
+    xlat, xlon = lat_lon_x
+    ylat, ylon = lat_lon_y
+
     proc = subprocess.Popen(
         [os.path.join(os.path.dirname(os.path.realpath(__file__)), __file__),
-         addr_x, addr_y],
+         str(xlat), str(xlon), str(ylat), str(ylon)],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
     stdout = proc.communicate()[0]
@@ -130,6 +122,10 @@ def get_routes_proc(addr_x, addr_y):
 
 
 if __name__ == '__main__':
-    addr_x = sys.argv[1]
-    addr_y = sys.argv[2]
-    print(get_routes(addr_x, addr_y))
+    xlat, xlon, ylat, ylon = sys.argv[1:]
+    print(
+        get_routes(
+            (float(xlat), float(xlon)),
+            (float(ylat), float(ylon))
+        )
+    )

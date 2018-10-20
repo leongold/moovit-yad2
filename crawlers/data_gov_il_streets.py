@@ -1,4 +1,4 @@
-
+#!/usr/bin/python3
 from io import BytesIO
 import lxml
 import logging
@@ -13,6 +13,8 @@ from common import setup_logging
 
 DATA_GOV = 'https://data.gov.il'
 DATASET_URL = '{}/dataset/321'.format(DATA_GOV)
+
+logger = setup_logging(__name__)
 
 
 def _get_entries(city):
@@ -29,7 +31,6 @@ def _get_entries(city):
             if entry.xpath('שם_ישוב')[0].text.strip() == city]
 
 if __name__ == '__main__':
-    setup_logging()
     config = get_config()
     location =  config['location']
     city = config['data_gov_il_city']
@@ -38,7 +39,7 @@ if __name__ == '__main__':
     for street in _get_entries(city):
         dst_addr = '{},{}'.format(street, city)
 
-        logging.info('{} -> {}'.format(dst_addr, location))
+        logger.info('{} -> {}'.format(dst_addr, location))
         requests.post(
             url,
             data={
