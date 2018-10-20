@@ -12,7 +12,7 @@ def setup_logging(module):
     filepath = os.path.join(constants.ROOT_DIR, 'logs', filename + '.log')
 
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format='%(asctime)s %(message)s',
         handlers=[logging.FileHandler(filepath),
                   logging.StreamHandler()]
