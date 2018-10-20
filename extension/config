@@ -1,1 +1,6 @@
-../config
+{
+  "location": "דרך ירושליים 34,רעננה",
+  "url": "http://localhost:5000",
+  "yad2_rent_ads_params": "AreaID=19&HomeTypeID=1&fromPrice=4500&untilPrice=6500&PriceType=1",
+  "data_gov_il_city": "הוד השרון"
+}

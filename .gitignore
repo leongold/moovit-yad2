@@ -6,3 +6,5 @@ logs/*
 db
 config
 .vscode
+extension-new/config
+extension/config
