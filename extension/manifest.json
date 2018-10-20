@@ -7,6 +7,6 @@
     "matches": ["*://www.yad2.co.il/Nadlan/rent.php*"],
     "js": ["jquery.min.js", "content.js"]
    }],
-   "permissions": ["activeTab"],
+   "permissions": ["activeTab", "storage"],
    "web_accessible_resources": ["config"]
 }
