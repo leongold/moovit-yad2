@@ -56,7 +56,7 @@ def main():
     except Exception as e:
         err = "failed to get coordinates:\n" + traceback.format_exc() 
         logger.error(err)
-        return json.dumps({"error": err})
+        return json.dumps({"error": "failed to get coordinates"})
 
     key = (lat_lon_x, lat_lon_y, timestamp)
     cached_result = db.get(json.dumps(key))
@@ -73,7 +73,7 @@ def main():
     except Exception as e:
         err = "failed to get route:\n" + traceback.format_exc()
         logger.error(err)
-        return json.dumps({"error": err})
+        return json.dumps({"error": "failed to get route"})
     try:
         result = json.dumps(
             {"timestamp": timestamp,
@@ -83,7 +83,7 @@ def main():
     except Exception as e:
         err = "failed to json dump: " + str(e)
         logger.error(err)
-        return json.dumps({"error": err})
+        return json.dumps({"error": "failed to serialize result"})
 
     logger.info("saving and returning route")
     db.set(json.dumps(key), routes)
