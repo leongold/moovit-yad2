@@ -39,17 +39,17 @@ function create_route_strings(data) {
     return strings;
 }
 
-function append_routes(node, strings) {
+function append_routes(node, date, strings) {
     var content_ele = $(node.find("div.content")[2]);
-    content_ele.append("<br/");
+    content_ele.append("<br/>" + date + "<br/>");
     for (var i = 0; i < strings.length; i++) {
         content_ele.append("<br/>" + strings[i]);
     }
 }
 
 function onSuccess(data, node) {
-    var strings = create_route_strings(data);
-    append_routes(node, strings);
+    var strings = create_route_strings(data["routes"]);
+    append_routes(node, data["date"], strings);
 }
 
 var observer = new MutationObserver(function(mutations) {

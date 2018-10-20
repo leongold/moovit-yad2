@@ -32,8 +32,8 @@ function create_route_strings(data) {
 }
 
 function onSuccess(data, contact_info, addr_1, addr_2) {
-    var strings = create_route_strings(data);
-    var ele = "<div>" + addr_1 + ' -> ' + addr_2 + ': <br>'
+    var strings = create_route_strings(data["routes"]);
+    var ele = "<div>" + addr_1 + ' -> ' + addr_2 + ' ( ' + data["date"] + ')<br>'
     for (var i = 0; i < strings.length; i++) {
         ele += strings[i] + '<br>'
     }

@@ -13,6 +13,8 @@ from requests_html import HTMLSession
 from common import setup_logging
 from lat_lon import get_lat_lon
 from moovit.routes import get_routes_proc
+from moovit.routes import next_weekday_at_8_am_timestamp
+from moovit.routes import ts_repr
 
 
 db = pickledb.load('db', True)
@@ -31,9 +33,17 @@ def _get_addresses(request):
 
 @app.route('/', methods = ['POST', 'GET'])
 def main():
-    src_addr, dst_addr = _get_addresses(request)
-    logger.info("recieved {} request, addresses: {}, {}".format(
-        request.method, src_addr, dst_addr)
+    if request.method == 'POST':
+        args = request.form
+    else:
+        args = request.args
+
+    src_addr = args.get('src_addr')
+    dst_addr = args.get('dst_addr')
+    timestamp = args.get('timestamp', next_weekday_at_8_am_timestamp())
+
+    logger.info("recieved {} request, addresses: {}, {} ({})".format(
+        request.method, src_addr, dst_addr, timestamp)
     )
     if not src_addr or not dst_addr:
         err = "src_addr and dst_addr are required"
@@ -48,26 +58,35 @@ def main():
         logger.error(err)
         return json.dumps({"error": err})
 
-    cached_result = db.get(json.dumps((lat_lon_x, lat_lon_y)))
+    key = (lat_lon_x, lat_lon_y, timestamp)
+    cached_result = db.get(json.dumps(key))
     if cached_result:
         logger.info("returning cached result")
-        return json.dumps(cached_result)
+        return json.dumps(
+            {"timestamp": timestamp,
+             "routes": cached_result,
+             "date": ts_repr(timestamp)}
+        )
 
     try:
-        routes = get_routes_proc(lat_lon_x, lat_lon_y)
+        routes = get_routes_proc(lat_lon_x, lat_lon_y, timestamp)
     except Exception as e:
         err = "failed to get route:\n" + traceback.format_exc()
         logger.error(err)
         return json.dumps({"error": err})
     try:
-        result = json.dumps(routes)
+        result = json.dumps(
+            {"timestamp": timestamp,
+             "routes": routes,
+             "date": ts_repr(timestamp)}
+        )
     except Exception as e:
         err = "failed to json dump: " + str(e)
         logger.error(err)
         return json.dumps({"error": err})
 
     logger.info("saving and returning route")
-    db.set(json.dumps((lat_lon_x, lat_lon_y)), routes)
+    db.set(json.dumps(key), routes)
     return result
 
 

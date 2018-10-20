@@ -27,17 +27,22 @@ def _days_delta(dt):
     return 1
 
 
-def _rounded_millisecond_timestamp():
+def next_weekday_at_8_am_timestamp():
     dt = datetime.datetime.now(pytz.timezone("Asia/Jerusalem"))
-    dt.replace(second=0, microsecond=0, minute=0, hour=8)
+    dt = dt.replace(second=0, microsecond=0, minute=0, hour=8)
     weekday = dt + datetime.timedelta(days=_days_delta(dt))
     return calendar.timegm(weekday.timetuple()) * 1000
 
 
-def _create_moovit_url(lat_lon_x, lat_lon_y):
+def ts_repr(ts):
+    dt_naive_utc = datetime.datetime.utcfromtimestamp(ts / 1000)
+    dt = dt_naive_utc.replace(tzinfo=pytz.timezone("Asia/Jerusalem"))
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _create_moovit_url(lat_lon_x, lat_lon_y, when):
     xlat, xlon = lat_lon_x
     ylat, ylon = lat_lon_y
-    when = _rounded_millisecond_timestamp()
     return MOOVIT_FMT.format(
         xlat=xlat, xlon=xlon,
         ylat=ylat, ylon=ylon,
@@ -63,7 +68,7 @@ def _process_leg_type(leg_type):
     elif type_ == 'walk':
         attrs = data.text
     else:
-        attrs = None
+        attrs = ""
 
     return [type_, attrs]
 
@@ -91,22 +96,26 @@ def _get_routes(root):
             for route in routes]
 
 
-def get_routes(lat_lon_x, lat_lon_y):
+def get_routes(lat_lon_x, lat_lon_y, timestamp=None):
     RENDER_SLEEP = 5
 
+    timestamp = timestamp if timestamp else next_weekday_at_8_am_timestamp()
     html_session = HTMLSession()
-    response = html_session.get(_create_moovit_url(lat_lon_x, lat_lon_y))
+    response = html_session.get(
+        _create_moovit_url(lat_lon_x, lat_lon_y, timestamp)
+    )
     response.html.render(sleep=RENDER_SLEEP)
     return _get_routes(response.html.lxml)
 
 
-def get_routes_proc(lat_lon_x, lat_lon_y):
+def get_routes_proc(lat_lon_x, lat_lon_y, timestamp=None):
     xlat, xlon = lat_lon_x
     ylat, ylon = lat_lon_y
+    timestamp = timestamp if timestamp else next_weekday_at_8_am_timestamp()
 
     proc = subprocess.Popen(
         [os.path.join(os.path.dirname(os.path.realpath(__file__)), __file__),
-         str(xlat), str(xlon), str(ylat), str(ylon)],
+         str(xlat), str(xlon), str(ylat), str(ylon), str(timestamp)],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
     stdout = proc.communicate()[0]
@@ -122,10 +131,15 @@ def get_routes_proc(lat_lon_x, lat_lon_y):
 
 
 if __name__ == '__main__':
-    xlat, xlon, ylat, ylon = sys.argv[1:]
+    xlat, xlon, ylat, ylon = sys.argv[1:5]
+    try:
+        timestamp = sys.argv[5]
+    except IndexError:
+        timestamp = next_weekday_at_8_am_timestamp()
     print(
         get_routes(
             (float(xlat), float(xlon)),
-            (float(ylat), float(ylon))
+            (float(ylat), float(ylon)),
+            int(timestamp)
         )
     )
