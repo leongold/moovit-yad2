@@ -107,7 +107,7 @@ var config = {
 observer.observe(document.body, config);
 
 var tbl = $($(document).find("div.mainTable_top_right td[align=left] tr")[0])
-tbl.append($('<td><form>url<input type="text" placeholder="http://localhost:5000" id="url"></form></td>'))
+tbl.append($('<td><form>url<input type="text" placeholder="http://104.248.143.170:5000" id="url"></form></td>'))
 tbl.append($('<td><form>dst<input type="text" placeholder="דרך ירושליים 34,רעננה" id="dst"></form></td>'))
 
 var url = $(document).find("input[id=url]")
