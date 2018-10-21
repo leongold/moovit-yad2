@@ -122,11 +122,11 @@ def get_routes_proc(lat_lon_x, lat_lon_y, timestamp=None):
     try:
         decoded = stdout.decode('utf-8')
     except Exception as e:
-        raise ValueError("can't decode {}: {}".format(stdout, str(e)))
+        raise ValueError("can't decode {}".format(stdout))
     try:
         result = json.loads(decoded.strip().replace('\'', '"'))
     except Exception as e:
-        raise ValueError("can't json.load {}: {}".format(decoded, str(e)))
+        raise ValueError("can't load {}".format(decoded))
     return result
 
 
