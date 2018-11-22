@@ -23,14 +23,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-def _get_addresses(request):
-    if request.method == 'POST':
-        f = request.form.get
-    else:
-        f = request.args.get
-    return f('src_addr'), f('dst_addr')
-
-
 @app.route('/', methods = ['POST', 'GET'])
 def main():
     if request.method == 'POST':
@@ -51,14 +43,14 @@ def main():
         return json.dumps({"error": err})
 
     try:
-        lat_lon_x = get_lat_lon(src_addr)
-        lat_lon_y = get_lat_lon(dst_addr)
+        lat_lon_src = get_lat_lon(src_addr)
+        lat_lon_dst = get_lat_lon(dst_addr)
     except Exception as e:
-        err = "failed to get coordinates:\n" + traceback.format_exc() 
+        err = "failed to get coordinates:\n" + traceback.format_exc()
         logger.error(err)
         return json.dumps({"error": "failed to get coordinates"})
 
-    key = (lat_lon_x, lat_lon_y, timestamp)
+    key = (lat_lon_src, lat_lon_dst, timestamp)
     cached_result = db.get(json.dumps(key))
     if cached_result:
         logger.info("returning cached result")
@@ -69,7 +61,7 @@ def main():
         )
 
     try:
-        routes = get_routes_proc(lat_lon_x, lat_lon_y, timestamp)
+        routes = get_routes_proc(lat_lon_src, lat_lon_dst, timestamp)
     except Exception as e:
         err = "failed to get route:\n" + traceback.format_exc()
         logger.error(err)
