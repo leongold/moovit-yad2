@@ -5,3 +5,4 @@ Flask==1.0.2
 selenium==3.14.1
 pyquery==1.4.0
 requests>=2.20
+websockets>=10.0 # not directly required, pinned by Snyk to avoid a vulnerability
